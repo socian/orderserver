@@ -71,7 +71,13 @@ wsServer.on('request', function(request) {
         		}
         		var res = {command:'EXISTING_ORDER', data:order}
         		connection.sendUTF(JSON.stringify(res));
-        	}     
+        	} 
+        	
+        	if(msg.command == 'GET_ORDERS') {
+        		var res = {command:'ORDERS', data:orderTable}
+        		connection.sendUTF(JSON.stringify(res));
+        		console.log(orderTable);
+        	}    
         }
     });
     

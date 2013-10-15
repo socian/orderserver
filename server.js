@@ -99,7 +99,7 @@ wsServer.on('request', function(request) {
         		connection.sendUTF(JSON.stringify(res));
         	}
         	
-        	if(msg.command == 'ORDER_STATUS_UPDATE') {
+        	if(msg.command == 'ORDER_STATUS_READY') {
         		var orderId = msg.data.orderId;
         		var orderStatus = msg.data.orderStatus;
         		orderTable[orderId].status = orderStatus;
@@ -110,9 +110,27 @@ wsServer.on('request', function(request) {
         		
         		// update the staff order list
         		var resStaff = {command:'ORDERS', data:orderTable}
+        		staffConnection.sendUTF(JSON.stringify(resStaff));		
+        	}
+        	
+        	if(msg.command == 'ORDER_STATUS_COMPLETE') {
+        		var orderId = msg.data.orderId;
+        		var orderStatus = msg.data.orderStatus;
+        		
+        		// TODO:
+        		// store the order complete into the database
+        		
+        		// delete the order
+        		delete orderTable[ orderId ];
+        		
+        		// update the staff order list
+        		var resStaff = {command:'ORDERS', data:orderTable}
         		staffConnection.sendUTF(JSON.stringify(resStaff));	
         		
+        		var resGuest = {command:'EXISTING_ORDER', data:{items:[], status:0} }
+        		orderConnection[ orderId ].sendUTF(JSON.stringify( resGuest ));
         		
+        		delete orderConnection[ orderId ];
         	}
         }
     });

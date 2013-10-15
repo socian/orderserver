@@ -85,6 +85,8 @@ wsServer.on('request', function(request) {
         		}
         		var res = {command:'EXISTING_ORDER', data:order}
         		connection.sendUTF(JSON.stringify(res));
+        		
+        		orderConnection[orderId] = connection;
         	} 
         	
         	if(msg.command == 'GET_ORDERS') {
@@ -118,6 +120,7 @@ wsServer.on('request', function(request) {
         		
         		// TODO:
         		// store the order complete into the database
+        		// because we are paid based on that
         		
         		// delete the order
         		delete orderTable[ orderId ];

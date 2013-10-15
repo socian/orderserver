@@ -90,7 +90,6 @@ wsServer.on('request', function(request) {
         	if(msg.command == 'GET_ORDERS') {
         		var res = {command:'ORDERS', data:orderTable}
         		connection.sendUTF(JSON.stringify(res));
-        		console.log(orderTable);
         	}    
         	
         	if(msg.command == 'REGISTER_STAFF') {

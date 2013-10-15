@@ -32,6 +32,7 @@ var orderTable = {}
 var count = 0;
 
 var staffConnection = null;
+var orderConnection = {};
 
 wsServer.on('request', function(request) {
     if (!originIsAllowed(request.origin)) {
@@ -65,12 +66,14 @@ wsServer.on('request', function(request) {
         			staffConnection.sendUTF(JSON.stringify(res));	
         		}
         		
-
         		// send the order ID to the client
         		var resObj = {command:"ORDER_RECEIVED", data:{"orderId":orderId, "orderStatus":orderStatus}}
         		connection.sendUTF(JSON.stringify(resObj));
         		
+        		// store the order connection in order to notify the guest
+        		// if the order status is updated
         		
+        		orderConnection[ orderId ] = connection;	
         	}
         	
         	// get an existing order by the order id
@@ -94,6 +97,22 @@ wsServer.on('request', function(request) {
         		staffConnection = connection;
         		var res = {command:'STAFF_REGISTERED', data:orderTable}
         		connection.sendUTF(JSON.stringify(res));
+        	}
+        	
+        	if(msg.command == 'ORDER_STATUS_UPDATE') {
+        		var orderId = msg.data.orderId;
+        		var orderStatus = msg.data.orderStatus;
+        		orderTable[orderId].status = orderStatus;
+        		
+        		// update the guest order status
+        		var resGuest = {command:'EXISTING_ORDER', data:orderTable[orderId]}
+        		orderConnection[ orderId ].sendUTF(JSON.stringify(resGuest));
+        		
+        		// update the staff order list
+        		var resStaff = {command:'ORDERS', data:orderTable}
+        		staffConnection.sendUTF(JSON.stringify(resStaff));	
+        		
+        		
         	}
         }
     });

@@ -31,6 +31,8 @@ function originIsAllowed(origin) {
 var orderTable = {}
 var count = 0;
 
+var staffConnection = null;
+
 wsServer.on('request', function(request) {
     if (!originIsAllowed(request.origin)) {
       // Make sure we only accept requests from an allowed origin
@@ -57,9 +59,18 @@ wsServer.on('request', function(request) {
         		orderTable[ orderId ] = msg.data; 
         		orderTable[ orderId ].status = orderStatus;
         		
+        		// send the order to the staff app
+        		if(staffConnection != null) {
+        			var res = {command:'ORDERS', data:orderTable}
+        			staffConnection.sendUTF(JSON.stringify(res));	
+        		}
+        		
+
         		// send the order ID to the client
         		var resObj = {command:"ORDER_RECEIVED", data:{"orderId":orderId, "orderStatus":orderStatus}}
         		connection.sendUTF(JSON.stringify(resObj));
+        		
+        		
         	}
         	
         	// get an existing order by the order id
@@ -78,6 +89,12 @@ wsServer.on('request', function(request) {
         		connection.sendUTF(JSON.stringify(res));
         		console.log(orderTable);
         	}    
+        	
+        	if(msg.command == 'REGISTER_STAFF') {
+        		staffConnection = connection;
+        		var res = {command:'STAFF_REGISTERED', data:orderTable}
+        		connection.sendUTF(JSON.stringify(res));
+        	}
         }
     });
     

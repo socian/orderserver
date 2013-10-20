@@ -68,8 +68,11 @@ function WSOrderServer() {
 
 var s = new WSOrderServer();
 
+var staffConnection = null;
+var orderConnections = {};
+
 s.onCommand('REGISTER_STAFF', function(connection, data) {
-	
+	staffConnection = connection;
 });
 s.onCommand('NEW_ORDER', function(connection, data) {
 	

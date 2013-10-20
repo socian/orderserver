@@ -4,7 +4,7 @@ function WSOrderServer() {
 	
 	this.commandHandler = {};
 	
-	this.run = function(port) {
+	this.run = function(port, onOpenHandler) {
 		
 		var WebSocketServer = require('websocket').server;
 		var http = require('http');	
@@ -30,25 +30,26 @@ function WSOrderServer() {
 		});
 		
 		
-		wsServer.on('request', function(request) {
-			if (!_this.originIsAllowed(request.origin)) {
-      			// Make sure we only accept requests from an allowed origin
-      			request.reject();
-      			console.log((new Date()) + ' Connection from origin ' + request.origin + ' rejected.');
-      			return;
-    		}	
-    		
-    		var connection = request.accept('echo-protocol', request.origin);
-    		console.log((new Date()) + ' Connection accepted.');
-    		
-    		connection.on('message', function(message) {
-    			if (message.type === 'utf8') {
-    				var msg = JSON.parse(message.utf8Data);
-    				var handler = _this.commandHandler[msg.command];
-    				if(handler != null) handler.apply(handler, [msg.data]);
-    			}
-    		)}
-		)}	
+		wsServer.on('request', function(message) {
+			if(! _this.originIsAllowed(request.origin)) {
+				request.reject();
+				console.log((new Date()) + ' Connection from origin ' + request.origin + ' rejected.');
+				return;
+			}
+			
+			var connection = request.accept('echo-protocol', request.origin);
+			console.log((new Date()) + ' Connection accepted.');
+			
+			connection.on('message', function(message) {
+				if (message.type === 'utf8') {
+					var msg = JSON.parse(message.utf8Data);
+					var handler = _this.commandHandler[msg.command];
+					if(handler != null) {
+						handler.apply(handler, [connection, msg.data]);
+					}
+				}
+			});
+		});
 	}
 	
 	this.onCommand = function(command, handler) {
@@ -59,5 +60,22 @@ function WSOrderServer() {
 		return true;
 	}
 }
+
+
+//------------------//
+//		Usage
+//------------------//
+
+var s = new WSOrderServer();
+s.run(8080);
+s.onCommand('REGISTER_STAFF', function(connection, data) {
+	
+});
+s.onCommand('NEW_ORDER', function(connection, data) {
+	
+});
+s.onCommand('GET_ORDER_LIST', function(connection, data) {
+	
+});
 	
 

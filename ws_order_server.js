@@ -67,7 +67,7 @@ function WSOrderServer() {
 //------------------//
 
 var s = new WSOrderServer();
-s.run(8080);
+
 s.onCommand('REGISTER_STAFF', function(connection, data) {
 	
 });
@@ -78,4 +78,5 @@ s.onCommand('GET_ORDER_LIST', function(connection, data) {
 	
 });
 	
-
+// start the server
+s.run( 8080 );

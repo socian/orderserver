@@ -71,6 +71,7 @@ function OrderModel() {
 		orderlist:{}
 	}
 	
+	
 	this.orderListArray = function() {
 		var arr = new Array();
 		for(var key in _this.data.orderlist) {
@@ -79,6 +80,7 @@ function OrderModel() {
 		}
 		return arr;
 	}
+	
 }
 
 //------------------//
@@ -86,6 +88,8 @@ function OrderModel() {
 //------------------//
 
 var s = new WSOrderServer();
+
+var orderModel = new OrderModel();
 
 var staffConnection = null;
 var orderConnections = {};
@@ -98,6 +102,9 @@ s.onCommand('REGISTER_STAFF', function(connection, data) {
 
 s.onCommand('NEW_ORDER', function(connection, data) {
 	console.log('NEW_ORDER');
+	
+	var orderTable = orderModel.data.orderlist;
+	
 	data.status = 1;
 	data.orderid = "order_" + orderId;
 	orderTable[ data.orderid ] = data;
@@ -111,13 +118,7 @@ s.onCommand('NEW_ORDER', function(connection, data) {
 	
 	// notify the staff that there is a new order
 	
-	// TODO:
-	// outsource into a model
-	var orderArr = new Array();
-	for(var key in orderTable) {
-		var item = orderTable[key];
-		orderArr.push(item);
-	}
+	var orderArr = orderModel.listOrderArray();
 	var msg = {command:'ORDER_UPDATE', data:orderArr}
 	staffConnection.sendUTF(JSON.stringify(msg));
 	
@@ -125,6 +126,8 @@ s.onCommand('NEW_ORDER', function(connection, data) {
 
 s.onCommand('GET_ORDER', function(connection, data) {
 	console.log('GET_ORDER');
+	
+	var orderTable = orderModel.data.orderlist;
 	
 	var oid = data.orderid;
 	var order = orderTable[oid];
@@ -135,20 +138,17 @@ s.onCommand('GET_ORDER', function(connection, data) {
 	
 s.onCommand('GET_ORDER_LIST', function(connection, data) {
 	console.log('GET_ORDER_LIST');
-	var orderArr = new Array();
 	
-	// TODO:
-	// outsource into a model
-	for(var key in orderTable) {
-		var item = orderTable[key];
-		orderArr.push(item);
-	}
+	var orderArr = orderModel.orderListArray();
 	var msg = {command:'ORDER_UPDATE', data:orderArr}
 	connection.sendUTF(JSON.stringify(msg));
 });	
 
 s.onCommand('UPDATE_ORDER_STATUS_READY', function(connection, data) {
 	console.log('UPDATE_ORDER_STATUS_READY');
+	
+	var orderTable = orderModel.data.orderlist;
+	
 	var oid = data.orderid;
 	var order = orderTable[oid];
 	order.status = 2;
@@ -159,11 +159,7 @@ s.onCommand('UPDATE_ORDER_STATUS_READY', function(connection, data) {
 	
 	// TODO:
 	// outsource into a model
-	var orderArr = new Array();
-	for(var key in orderTable) {
-		var item = orderTable[key];
-		orderArr.push(item);
-	}
+	var orderArr = orderModel.orderListArray();
 	
 	var msg2staff = {command:'ORDER_UPDATE', data:orderArr}
 	connection.sendUTF(JSON.stringify(msg2staff));
@@ -172,7 +168,7 @@ s.onCommand('UPDATE_ORDER_STATUS_READY', function(connection, data) {
 s.onCommand('UPDATE_ORDER_STATUS_COMPLETE', function(connection, data) {
 	console.log('UPDATE_ORDER_STATUS_COMPLETE');
 	var oid = data.orderid;
-	delete orderTable[oid];
+	delete orderModel.data.orderlist[oid];
 	
 	var emptyOrder = {
 		items : [],
@@ -190,11 +186,7 @@ s.onCommand('UPDATE_ORDER_STATUS_COMPLETE', function(connection, data) {
 	
 	// TODO:
 	// outsource into a model
-	var orderArr = new Array();
-	for(var key in orderTable) {
-		var item = orderTable[key];
-		orderArr.push(item);
-	}
+	var orderArr = orderModel.orderListArray();
 	
 	var msg2staff = {command:'ORDER_UPDATE', data:orderArr}
 	connection.sendUTF(JSON.stringify(msg2staff));

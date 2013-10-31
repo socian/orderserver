@@ -117,7 +117,7 @@ s.onCommand('NEW_ORDER', function(connection, data) {
 	if(staffConnection == null) return;
 	
 	// notify the staff that there is a new order
-	var orderArr = orderModel.listOrderArray();
+	var orderArr = orderModel.orderListArray();
 	var msg = {command:'ORDER_UPDATE', data:orderArr}
 	staffConnection.sendUTF(JSON.stringify(msg));
 	

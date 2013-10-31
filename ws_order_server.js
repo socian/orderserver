@@ -71,11 +71,11 @@ function OrderModel() {
 		orderlist:{}
 	}
 	
-	
 	this.orderListArray = function() {
 		var arr = new Array();
-		for(var key in _this.data.orderlist) {
-			var item = _this.data.orderlist[key];
+		var map = _this.data.orderlist;
+		for(var key in map) {
+			var item = map[key];
 			arr.push(item);
 		}
 		return arr;

@@ -117,7 +117,6 @@ s.onCommand('NEW_ORDER', function(connection, data) {
 	if(staffConnection == null) return;
 	
 	// notify the staff that there is a new order
-	
 	var orderArr = orderModel.listOrderArray();
 	var msg = {command:'ORDER_UPDATE', data:orderArr}
 	staffConnection.sendUTF(JSON.stringify(msg));
@@ -157,8 +156,6 @@ s.onCommand('UPDATE_ORDER_STATUS_READY', function(connection, data) {
 	var msg2guest = {command:'ORDER_UPDATE', data:order}
 	guestCon.sendUTF(JSON.stringify(msg2guest));
 	
-	// TODO:
-	// outsource into a model
 	var orderArr = orderModel.orderListArray();
 	
 	var msg2staff = {command:'ORDER_UPDATE', data:orderArr}
@@ -181,11 +178,8 @@ s.onCommand('UPDATE_ORDER_STATUS_COMPLETE', function(connection, data) {
 	var guestCon = orderConnections[oid];
 	guestCon.sendUTF(JSON.stringify(msg2guest));
 	
-	// does this also delete orderConnections[oid] ? 
-	//delete guestCon;
-	
 	// TODO:
-	// outsource into a model
+	// delete the guest connection
 	var orderArr = orderModel.orderListArray();
 	
 	var msg2staff = {command:'ORDER_UPDATE', data:orderArr}

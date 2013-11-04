@@ -40,7 +40,7 @@ function OrderModel() {
 //---------------------//
 
 // instantiate the web socket order server
-var orderServer = require('./wsserver').Instantiate();
+var orderServer = require('./orderserver').instantiate();
 
 // instantiate the order model
 var orderModel = new OrderModel();

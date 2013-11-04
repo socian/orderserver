@@ -64,10 +64,13 @@ OrderServer = function() {
 	}
 	
 	this.originIsAllowed = function(origin) {
+		// TODO:
+		// implement a white filter 
 		return true;
 	}
 }
 
+// returns a new OrderServer instance  
 exports.instantiate = function() {
 	return new OrderServer();
 }

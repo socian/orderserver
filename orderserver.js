@@ -2,7 +2,7 @@
 // Order Server Class
 //------------------------//
 
-OrderServer = function() {
+var OrderServer = function() {
 	
 	var _this = this;
 	

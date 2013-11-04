@@ -22,7 +22,8 @@ function OrderModel() {
 	this.data = {
 		orderlist:{}
 	}
-	
+	// utility method that returns
+	// the order list as an array
 	this.orderListArray = function() {
 		var arr = new Array();
 		var map = _this.data.orderlist;
@@ -50,12 +51,16 @@ var orderConnections = {};
 var orderTable = {};
 var orderId = 0;
 
-orderServer.onCommand('REGISTER_STAFF', function(connection, data) {
+// register the staff socket connection in order to notify 
+// if new orders are coming in
+orderServer.onCommand( OrderCommand.REGISTER_STAFF, function(connection, data) {
+	console.log(OrderCommand.REGISTER_STAFF);
 	staffConnection = connection;
 });
 
-orderServer.onCommand('NEW_ORDER', function(connection, data) {
-	console.log('NEW_ORDER');
+// handle incoming orders
+orderServer.onCommand( OrderCommand.NEW_ORDER, function(connection, data) {
+	console.log(OrderCommand.NEW_ORDER);
 	
 	var orderTable = orderModel.data.orderlist;
 	
@@ -63,7 +68,8 @@ orderServer.onCommand('NEW_ORDER', function(connection, data) {
 	data.orderid = "order_" + orderId;
 	orderTable[ data.orderid ] = data;
 	orderId ++;
-	var msg = {command:'ORDER_UPDATE', data:data}
+	
+	var msg = {command: OrderCommand.ORDER_UPDATE, data:data}
 	connection.sendUTF(JSON.stringify(msg));
 	
 	orderConnections[data.orderid] = connection;
@@ -72,33 +78,36 @@ orderServer.onCommand('NEW_ORDER', function(connection, data) {
 	
 	// notify the staff that there is a new order
 	var orderArr = orderModel.orderListArray();
-	var msg = {command:'ORDER_UPDATE', data:orderArr}
+	var msg = {command: OrderCommand.ORDER_UPDATE, data:orderArr}
 	staffConnection.sendUTF(JSON.stringify(msg));
 	
 });
 
-orderServer.onCommand('GET_ORDER', function(connection, data) {
-	console.log('GET_ORDER');
+// returns an existing order by the order id. 
+orderServer.onCommand( OrderCommand.GET_ORDER, function(connection, data) {
+	console.log(OrderCommand.GET_ORDER);
 	
 	var orderTable = orderModel.data.orderlist;
 	
 	var oid = data.orderid;
 	var order = orderTable[oid];
 	
-	var msg = {command:'ORDER_UPDATE', data:order}
+	var msg = {command:OrderCommand.ORDER_UPDATE, data:order}
 	connection.sendUTF(JSON.stringify(msg));
 });
-	
-orderServer.onCommand('GET_ORDER_LIST', function(connection, data) {
-	console.log('GET_ORDER_LIST');
+
+// retunrs the complete order list as an array	
+orderServer.onCommand( OrderCommand.GET_ORDER_LIST, function(connection, data) {
+	console.log(OrderCommand.GET_ORDER_LIST);
 	
 	var orderArr = orderModel.orderListArray();
-	var msg = {command:'ORDER_UPDATE', data:orderArr}
+	var msg = {command:OrderCommand.ORDER_UPDATE, data:orderArr}
 	connection.sendUTF(JSON.stringify(msg));
 });	
 
-orderServer.onCommand('UPDATE_ORDER_STATUS_READY', function(connection, data) {
-	console.log('UPDATE_ORDER_STATUS_READY');
+// set the order status to ready. 
+orderServer.onCommand( OrderCommand.UPDATE_ORDER_STATUS_READY, function(connection, data) {
+	console.log(OrderCommand.UPDATE_ORDER_STATUS_READY);
 	
 	var orderTable = orderModel.data.orderlist;
 	
@@ -107,20 +116,23 @@ orderServer.onCommand('UPDATE_ORDER_STATUS_READY', function(connection, data) {
 	order.status = 2;
 	orderTable[oid] = order;
 	var guestCon = orderConnections[oid];
-	var msg2guest = {command:'ORDER_UPDATE', data:order}
+	var msg2guest = {command:OrderCommand.ORDER_UPDATE, data:order}
 	guestCon.sendUTF(JSON.stringify(msg2guest));
 	
 	var orderArr = orderModel.orderListArray();
 	
-	var msg2staff = {command:'ORDER_UPDATE', data:orderArr}
+	var msg2staff = {command:OrderCommand.ORDER_UPDATE, data:orderArr}
 	connection.sendUTF(JSON.stringify(msg2staff));
 });
 
-orderServer.onCommand('UPDATE_ORDER_STATUS_COMPLETE', function(connection, data) {
-	console.log('UPDATE_ORDER_STATUS_COMPLETE');
+// set the order status to complete
+orderServer.onCommand( OrderCommand.UPDATE_ORDER_STATUS_COMPLETE, function(connection, data) {
+	console.log(OrderCommand.UPDATE_ORDER_STATUS_COMPLETE);
 	var oid = data.orderid;
 	delete orderModel.data.orderlist[oid];
 	
+	// TODO:
+	// refactore this !
 	var emptyOrder = {
 		items : [],
 		status : 0,
@@ -128,7 +140,7 @@ orderServer.onCommand('UPDATE_ORDER_STATUS_COMPLETE', function(connection, data)
 		orderid: ''
 	}
 	
-	var msg2guest = {command:'ORDER_UPDATE', data:emptyOrder}
+	var msg2guest = {command:OrderCommand.ORDER_UPDATE, data:emptyOrder}
 	var guestCon = orderConnections[oid];
 	guestCon.sendUTF(JSON.stringify(msg2guest));
 	
@@ -136,9 +148,9 @@ orderServer.onCommand('UPDATE_ORDER_STATUS_COMPLETE', function(connection, data)
 	// delete the guest connection
 	var orderArr = orderModel.orderListArray();
 	
-	var msg2staff = {command:'ORDER_UPDATE', data:orderArr}
+	var msg2staff = {command:OrderCommand.ORDER_UPDATE, data:orderArr}
 	connection.sendUTF(JSON.stringify(msg2staff));
 });
 
-// start the server
+// start the server on a custom port
 orderServer.run( 8080 );
